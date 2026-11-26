@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.text.TextUtils
 import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioButton
@@ -13,6 +14,7 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -21,6 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var prefs: PrefsManager
     private lateinit var switchEnabled: SwitchMaterial
+    private lateinit var tvPermissionsSummary: TextView
     private lateinit var etBankSenders: EditText
     private lateinit var rgTargetType: RadioGroup
     private lateinit var rbNumber: RadioButton
@@ -32,12 +35,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvStatusLog: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         prefs = PrefsManager(this)
 
         switchEnabled = findViewById(R.id.switchEnabled)
+        tvPermissionsSummary = findViewById(R.id.tvPermissionsSummary)
         etBankSenders = findViewById(R.id.etBankSenders)
         rgTargetType = findViewById(R.id.rgTargetType)
         rbNumber = findViewById(R.id.rbNumber)
@@ -62,7 +67,7 @@ class MainActivity : AppCompatActivity() {
                 "Alkuraimi",
                 "رسالة تجريبية: تم استلام حوالة بنكية بنجاح."
             )
-            tvStatusLog.text = "السجل: ${prefs.lastLog}"
+            tvStatusLog.text = prefs.lastLog
         }
 
         findViewById<Button>(R.id.btnSmsPermission).setOnClickListener {
@@ -101,7 +106,36 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        tvStatusLog.text = "السجل: ${prefs.lastLog}"
+        tvStatusLog.text = prefs.lastLog
+        updatePermissionSummary()
+    }
+
+    private fun updatePermissionSummary() {
+        val smsOk = ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED
+        val accOk = isAccessibilityEnabled()
+        val overlayOk = Settings.canDrawOverlays(this)
+
+        val smsIcon = if (smsOk) "✅" else "❌"
+        val accIcon = if (accOk) "✅" else "❌"
+        val ovIcon = if (overlayOk) "✅" else "❌"
+
+        tvPermissionsSummary.text = "حالة الصلاحيات:  الرسائل $smsIcon  |  إمكانية الوصول $accIcon  |  الظهور بالأعلى $ovIcon"
+    }
+
+    private fun isAccessibilityEnabled(): Boolean {
+        val enabledServices = Settings.Secure.getString(
+            contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+        val colonSplitter = TextUtils.SimpleStringSplitter(':')
+        colonSplitter.setString(enabledServices)
+        while (colonSplitter.hasNext()) {
+            val componentName = colonSplitter.next()
+            if (componentName.contains(packageName, ignoreCase = true)) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun loadSettings() {
@@ -118,7 +152,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             rbWhatsAppNormal.isChecked = true
         }
-        tvStatusLog.text = "السجل: ${prefs.lastLog}"
+        tvStatusLog.text = prefs.lastLog
+        updatePermissionSummary()
     }
 
     private fun saveSettings() {
@@ -143,6 +178,7 @@ class MainActivity : AppCompatActivity() {
 
         if (needed.isEmpty()) {
             Toast.makeText(this, "صلاحية الرسائل ممنوحة بالفعل", Toast.LENGTH_SHORT).show()
+            updatePermissionSummary()
         } else {
             ActivityCompat.requestPermissions(this, needed.toTypedArray(), 101)
         }

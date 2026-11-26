@@ -45,7 +45,8 @@ object WhatsAppForwarder {
         )
 
         if (targetType == PrefsManager.TARGET_NUMBER) {
-            val cleanPhone = targetValue.replace("+", "").replace(" ", "").replace("-", "")
+            var cleanPhone = targetValue.replace("+", "").replace(" ", "").replace("-", "")
+            if (cleanPhone.startsWith("00")) cleanPhone = cleanPhone.substring(2)
             val encoded = URLEncoder.encode(formattedMessage, "UTF-8")
             val uri = Uri.parse("https://api.whatsapp.com/send?phone=$cleanPhone&text=$encoded")
             val intent = Intent(Intent.ACTION_VIEW, uri).apply {
