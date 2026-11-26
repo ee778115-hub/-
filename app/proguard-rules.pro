@@ -1,0 +1,2 @@
+-keep class com.banksms.forwarder.SmsReceiver { *; }
+-keep class com.banksms.forwarder.WhatsAppAccessibilityService { *; }

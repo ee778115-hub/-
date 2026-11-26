@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.BankSmsForwarder" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">#0F5132</item>
+        <item name="colorPrimaryVariant">#0A3622</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#198754</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+    </style>
+</resources>
