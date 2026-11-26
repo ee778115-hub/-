@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">تحويل الرسائل البنكية</string>
+    <string name="accessibility_service_label">خدمة تحويل الرسائل البنكية إلى واتساب</string>
+    <string name="accessibility_service_description">تقوم بفتح واتساب وإرسال رسالة البنك تلقائياً إلى رقم المحاسب أو مجموعة الواتساب المحددة.</string>
+</resources>
